@@ -19,12 +19,14 @@ if __name__ == "__main__":
     try:
         img = cv2.imread("./images/1024.jpg")
         img_g = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-        dst = cv2.fastNlMeansDenoisingColored(img, None, 10, 10, 7, 21)
+        dst = cv2.fastNlMeansDenoising(img, None, 10, 7, 21)
+        dst_c = cv2.fastNlMeansDenoisingColored(img, None, 10, 10, 7, 21)
         dst_g = cv2.cvtColor(dst, cv2.COLOR_BGR2GRAY)
-        plt.subplot(121), plt.imshow(img_g)
-        plt.subplot(122), plt.imshow(dst)
-        # plt.show()
-        print(getImgText(dst_g, lang="eng"))
+        plt.subplot(131), plt.imshow(img_g)
+        plt.subplot(132), plt.imshow(dst)
+        plt.subplot(133), plt.imshow(dst_c)
+        plt.show()
+        print(getImgText(dst_c, lang="eng"))
 
     except Exception as e:
         print(e)
