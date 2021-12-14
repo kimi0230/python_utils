@@ -1,4 +1,4 @@
-# Image 2 Gig
+# Image 2 gif
 Generate Gif file
 
 # Reference
