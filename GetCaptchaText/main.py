@@ -1,5 +1,18 @@
-from PIL import Image, ImageEnhance
+from PIL import Image, ImageEnhance, ImageDraw
 import pytesseract
+import cv2
+from matplotlib import pyplot as plt
+
+
+def getImgInfo(image):
+    print("圖片文件格式：" + image.format)
+    print("圖片大小：" + str(image.size))
+    print("圖片模式：" + image.mode)
+
+
+def getImgText(image, lang="chi_tra+eng"):
+    text = pytesseract.image_to_string(image, lang=lang)  # 將圖片轉成字串
+    return text.replace(' ', '').replace('\n', '').replace('-', '')
 
 
 # 灰階影像
@@ -23,7 +36,7 @@ def Binarization(image, threshold):
 # 雜訊處理
 
 
-def Noise(image):
+def clearNoise2(image):
     data = image.getdata()
     coverImg = image
     w, h = coverImg.size
@@ -50,35 +63,77 @@ def Noise(image):
                     coverImg.putpixel((x, y), 0)
     return coverImg
 
-
-def getImgInfo(image):
-    print("圖片文件格式：" + image.format)
-    print("圖片大小：" + str(image.size))
-    print("圖片模式：" + image.mode)
+# ------- DO NOT EDIT BELOW -------
+# Code from https://stackoverflow.max-everyday.com/2019/06/python-opencv-denoising/
 
 
-def getImgText(image):
-    text = pytesseract.image_to_string(image)  # 將圖片轉成字串
-    return text.replace(' ', '').replace('\n', '').replace('-', '')
+def getPixel(image, x, y, G, N):
+    L = image.getpixel((x, y))
+    if L > G:
+        L = True
+    else:
+        L = False
+
+    nearDots = 0
+    if L == (image.getpixel((x - 1, y - 1)) > G):
+        nearDots += 1
+    if L == (image.getpixel((x - 1, y)) > G):
+        nearDots += 1
+    if L == (image.getpixel((x - 1, y + 1)) > G):
+        nearDots += 1
+    if L == (image.getpixel((x, y - 1)) > G):
+        nearDots += 1
+    if L == (image.getpixel((x, y + 1)) > G):
+        nearDots += 1
+    if L == (image.getpixel((x + 1, y - 1)) > G):
+        nearDots += 1
+    if L == (image.getpixel((x + 1, y)) > G):
+        nearDots += 1
+    if L == (image.getpixel((x + 1, y + 1)) > G):
+        nearDots += 1
+
+    if nearDots < N:
+        return image.getpixel((x, y-1))
+    else:
+        return None
+
+# 降噪 Function
+
+
+def clearNoise(image, G, N, Z):
+    draw = ImageDraw.Draw(image)
+
+    for i in range(0, Z):
+        for x in range(1, image.size[0] - 1):
+            for y in range(1, image.size[1] - 1):
+                color = getPixel(image, x, y, G, N)
+                if color != None:
+                    draw.point((x, y), color)
+    return image
 
 
 if __name__ == "__main__":
-    filePath = "./images/1.png"
-    captcha = Image.open(filePath)
+    try:
+        filePath = "./images/1024.jpg"
+        captcha = Image.open(filePath)
 
-    # 查看圖片文件內容
-    getImgInfo(captcha)
+        # 查看圖片文件內容
+        getImgInfo(captcha)
 
-    # 轉換圖片
-    coverImg = Grayscale(captcha)
-    coverImg = Binarization(coverImg, 150)
+        # 轉換圖片
+        coverImg = Grayscale(captcha)
+        coverImg = Binarization(coverImg, 150)
 
-    # 增強圖片顯示效果
-    enhancer = ImageEnhance.Contrast(coverImg)
-    coverImg = enhancer.enhance(4)
-    # coverImg.show()
+        # 增強圖片顯示效果
+        enhancer = ImageEnhance.Contrast(coverImg)
+        coverImg = enhancer.enhance(4)
+        # coverImg.show()
 
-    # 處理有雜訊的數字圖片
-    coverImg = Noise(coverImg)
-    coverImg.show()
-    print(getImgText(coverImg))
+        # 處理有雜訊的數字圖片
+        coverImg = clearNoise2(coverImg)
+        # coverImg = clearNoise(coverImg, 50, 4, 6)
+        # coverImg.show()
+        print(getImgText(coverImg, lang="eng"))
+
+    except Exception as e:
+        print(e)
