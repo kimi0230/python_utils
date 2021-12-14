@@ -17,7 +17,7 @@ def getImgText(image, lang="chi_tra+eng"):
 
 
 if __name__ == "__main__":
-    img = cv2.imread("./images/PHRHJ.jpg")
+    img = cv2.imread("./images/azAz09.png")
     kernel = np.ones((4, 4), np.uint8)
     # 橡皮擦
     erosion = cv2.erode(img, kernel, iterations=1)
@@ -48,5 +48,5 @@ if __name__ == "__main__":
 
     # plt.subplot(121), plt.imshow(img)
     # plt.subplot(122), plt.imshow(dilation)
-    plt.show()
+    # plt.show()
     # print(getImgText(dilation, lang="eng"))
